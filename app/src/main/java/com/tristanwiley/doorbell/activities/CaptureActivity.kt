@@ -26,6 +26,7 @@ class CaptureActivity : Activity() {
     private val TF_INPUT_IMAGE_WIDTH = 224
     private val TF_INPUT_IMAGE_HEIGHT = 224
     private var cameraOpen = false
+    private var isFirstPhoto = true
     val handler = Handler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,6 +81,9 @@ class CaptureActivity : Activity() {
     }
 
     private fun onPhotoReady(bitmap: Bitmap) {
+        if (isFirstPhoto) {
+            isFirstPhoto = false
+        }
         imageView.setImageBitmap(bitmap)
     }
 
