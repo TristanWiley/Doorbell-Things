@@ -124,6 +124,7 @@ public class CameraHandler {
      * Execute a new capture request within the active session
      */
     private void triggerImageCapture() {
+        if (!initialized) return;
         try {
             final CaptureRequest.Builder captureBuilder =
                     mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);

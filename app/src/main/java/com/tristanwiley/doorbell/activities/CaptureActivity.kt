@@ -25,6 +25,7 @@ class CaptureActivity : Activity() {
     /** Image dimensions required by TF model  */
     private val TF_INPUT_IMAGE_WIDTH = 224
     private val TF_INPUT_IMAGE_HEIGHT = 224
+    private var cameraOpen = false
     val handler = Handler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,7 +36,7 @@ class CaptureActivity : Activity() {
         val delay = 1L
         handler.postDelayed(object : Runnable {
             override fun run() {
-                loadPhoto()
+                if (cameraOpen) loadPhoto()
                 handler.postDelayed(this, delay)
             }
         }, delay)
@@ -47,6 +48,7 @@ class CaptureActivity : Activity() {
     }
 
     private fun initCamera() {
+        cameraOpen = true
         mImagePreprocessor = ImagePreprocessor(
                 PREVIEW_IMAGE_WIDTH, PREVIEW_IMAGE_HEIGHT,
                 TF_INPUT_IMAGE_WIDTH, TF_INPUT_IMAGE_HEIGHT)
@@ -85,6 +87,7 @@ class CaptureActivity : Activity() {
      * Clean up resources used by the camera.
      */
     private fun closeCamera() {
+        cameraOpen = false
         mCameraHandler.shutDown()
     }
 
@@ -93,7 +96,7 @@ class CaptureActivity : Activity() {
      * When done, the method [.onPhotoReady] must be called with the image.
      */
     private fun loadPhoto() {
-        mCameraHandler.takePicture()
+        if (cameraOpen) mCameraHandler.takePicture()
     }
 
 }
