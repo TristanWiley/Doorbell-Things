@@ -16,7 +16,7 @@ import kotlinx.android.synthetic.main.activity_calling.*
 import org.jetbrains.anko.doAsync
 
 
-class CallingActivity : Activity() {
+class CaptureActivity : Activity() {
     lateinit var mCameraHandler: CameraHandler
     lateinit var mImagePreprocessor: ImagePreprocessor
     /** Camera image capture size  */
@@ -32,16 +32,15 @@ class CallingActivity : Activity() {
         setContentView(R.layout.activity_calling)
 
         initCamera()
-        val delay = 60L
+        val delay = 1L
         handler.postDelayed(object : Runnable {
             override fun run() {
-                //do something
+                loadPhoto()
                 handler.postDelayed(this, delay)
             }
         }, delay)
         val pwm = PeripheralManager.getInstance().openPwm("PWM2")
 
-        pwm.setEnabled(true)
         playSounds(pwm, arrayListOf(Note(440.0, 1000), Note(349.228, 1000),
                 Note(391.995, 1000), Note(261.626, 1000), Note(261.626, 1000),
                 Note(391.995, 1000), Note(440.0, 1000), Note(349.228, 1000)))
@@ -53,25 +52,27 @@ class CallingActivity : Activity() {
                 TF_INPUT_IMAGE_WIDTH, TF_INPUT_IMAGE_HEIGHT)
         mCameraHandler = CameraHandler.getInstance()
         mCameraHandler.initializeCamera(this,
-                PREVIEW_IMAGE_WIDTH, PREVIEW_IMAGE_HEIGHT, null,
-                { imageReader ->
-                    val bitmap = mImagePreprocessor.preprocessImage(imageReader.acquireNextImage())
-                    if (bitmap != null) {
-                        onPhotoReady(bitmap)
-                    }
-                })
+                PREVIEW_IMAGE_WIDTH, PREVIEW_IMAGE_HEIGHT, null
+        ) { imageReader ->
+            val bitmap = mImagePreprocessor.preprocessImage(imageReader.acquireNextImage())
+            if (bitmap != null) {
+                onPhotoReady(bitmap)
+            }
+        }
     }
 
     private fun playSounds(pwm: Pwm, list: ArrayList<Note>) {
+        pwm.setPwmFrequencyHz(list[0].NOTE_FREQUENCY)
+        pwm.setPwmDutyCycle(20.0)
+        pwm.setEnabled(true)
         doAsync {
             for (note in list) {
                 pwm.setPwmFrequencyHz(note.NOTE_FREQUENCY)
                 Thread.sleep(note.NOTE_DELAY)
-                runOnUiThread { loadPhoto() }
             }
             handler.removeCallbacksAndMessages(null)
             closeCamera()
-            runOnUiThread { startActivity(Intent(this@CallingActivity, MainActivity::class.java)) }
+            runOnUiThread { startActivity(Intent(this@CaptureActivity, MainActivity::class.java)) }
             pwm.setEnabled(false)
         }
     }
