@@ -10,7 +10,6 @@ import android.os.Handler
 import android.util.Log
 import com.google.android.things.pio.PeripheralManager
 import com.google.android.things.pio.Pwm
-import com.koushikdutta.async.future.FutureCallback
 import com.koushikdutta.ion.Ion
 import com.tristanwiley.doorbell.MainActivity
 import com.tristanwiley.doorbell.Note
