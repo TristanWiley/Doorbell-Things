@@ -13,7 +13,7 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main)
 
         dingDong.setOnClickListener {
-            startActivity(Intent(this, CaptureActivity::class.java))
+            startActivity(Intent(this@MainActivity, CaptureActivity::class.java))
         }
     }
 }

@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import com.google.android.things.pio.PeripheralManager
-import com.google.android.things.pio.Pwm
 import com.koushikdutta.ion.Ion
 import com.tristanwiley.doorbell.MainActivity
 import com.tristanwiley.doorbell.Note
@@ -41,20 +40,19 @@ class CaptureActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_calling)
-
+        textView.text = "Taking your picture..."
         initCamera()
         val delay = 1L
         handler.postDelayed(object : Runnable {
             override fun run() {
-                if (cameraOpen) loadPhoto()
-                handler.postDelayed(this, delay)
+                if (cameraOpen) {
+                    loadPhoto()
+
+                } else {
+                    handler.postDelayed(this, delay)
+                }
             }
         }, delay)
-        val pwm = PeripheralManager.getInstance().openPwm("PWM2")
-
-        playSounds(pwm, arrayListOf(Note(440.0, 1000), Note(349.228, 1000),
-                Note(391.995, 1000), Note(261.626, 1000), Note(261.626, 1000),
-                Note(391.995, 1000), Note(440.0, 1000), Note(349.228, 1000)))
     }
 
     private fun initCamera() {
@@ -73,45 +71,30 @@ class CaptureActivity : Activity() {
         }
     }
 
-    private fun playSounds(pwm: Pwm, list: ArrayList<Note>) {
-        pwm.setPwmFrequencyHz(list[0].NOTE_FREQUENCY)
-        pwm.setPwmDutyCycle(20.0)
-        pwm.setEnabled(true)
-        doAsync {
-            for (note in list) {
-                pwm.setPwmFrequencyHz(note.NOTE_FREQUENCY)
-                Thread.sleep(note.NOTE_DELAY)
-            }
-
-            pwm.setEnabled(false)
-        }
-    }
-
     private fun onPhotoReady(bitmap: Bitmap) {
-        if (isFirstPhoto) {
-            isFirstPhoto = false
-            Log.wtf("sendingPic", "This pic boutta get dabbed on")
-            Ion.with(applicationContext)
-                    .load("https://pennapps.nicholascarr.ca/uploadImage")
-                    .setMultipartFile("image", bitmapToFile(bitmap))
-                    .asJsonObject()
-                    .setCallback { _, json ->
-                        Log.wtf("onPhotoReady", "SENT: $json")
-                        //The JSON here is of format {"confidence":#, "faceID":String, "faceName": string}
-                        handler.removeCallbacksAndMessages(null)
-                        closeCamera()
-                        try {
-                            runOnUiThread {
-                                var intent = Intent(this@CaptureActivity, ResultActivity::class.java)
-                                intent.putExtra("faceName", json.get("faceName").asString)
-                                startActivity(intent)
-                            }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+        Log.wtf("sendingPic", "This pic boutta get dabbed on")
+        textView.text = "Sending your picture..."
+        Ion.with(applicationContext)
+                .load("https://pennapps.nicholascarr.ca/uploadImage")
+                .setMultipartFile("image", bitmapToFile(bitmap))
+                .asJsonObject()
+                .setCallback { _, json ->
+                    textView.text = "Processing your picture..."
+                    Log.wtf("onPhotoReady", "SENT: $json")
+                    closeCamera()
+                    //The JSON here is of format {"confidence":#, "faceID":String, "faceName": string}
+                    handler.removeCallbacksAndMessages(null)
+                    try {
+                        runOnUiThread {
+                            var intent = Intent(this@CaptureActivity, ResultActivity::class.java)
+                            intent.putExtra("faceName", json.get("faceName").asString)
+                            startActivity(intent)
                         }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     }
+                }
 
-        }
         imageView.setImageBitmap(bitmap)
     }
 
