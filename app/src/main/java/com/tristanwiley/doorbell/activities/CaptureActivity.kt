@@ -1,12 +1,17 @@
 package com.tristanwiley.doorbell.activities
 
 import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import com.google.android.things.pio.PeripheralManager
 import com.google.android.things.pio.Pwm
+import com.koushikdutta.async.future.FutureCallback
+import com.koushikdutta.ion.Ion
 import com.tristanwiley.doorbell.MainActivity
 import com.tristanwiley.doorbell.Note
 import com.tristanwiley.doorbell.R
@@ -14,6 +19,11 @@ import com.tristanwiley.doorbell.camera.CameraHandler
 import com.tristanwiley.doorbell.camera.ImagePreprocessor
 import kotlinx.android.synthetic.main.activity_calling.*
 import org.jetbrains.anko.doAsync
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.OutputStream
+import java.util.*
 
 
 class CaptureActivity : Activity() {
@@ -83,8 +93,37 @@ class CaptureActivity : Activity() {
     private fun onPhotoReady(bitmap: Bitmap) {
         if (isFirstPhoto) {
             isFirstPhoto = false
+            Ion.with(applicationContext)
+                    .load("http://b34457ed.ngrok.io/uploadImage")
+                    .setMultipartFile("image", bitmapToFile(bitmap))
+                    .asJsonObject()
+                    .setCallback({ _, json ->
+                        Log.wtf("onPhotoReady", "SENT: $json")
+                    })
         }
         imageView.setImageBitmap(bitmap)
+    }
+
+    private fun bitmapToFile(bitmap: Bitmap): File {
+        // Get the context wrapper
+        val wrapper = ContextWrapper(applicationContext)
+
+        // Initialize a new file instance to save bitmap object
+        var file = wrapper.getDir("Images", Context.MODE_PRIVATE)
+        file = File(file, "${UUID.randomUUID()}.jpg")
+
+        try {
+            // Compress the bitmap and save in jpg format
+            val stream: OutputStream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+            stream.flush()
+            stream.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        // Return the saved bitmap uri
+        return file
     }
 
     /**
