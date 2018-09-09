@@ -92,7 +92,7 @@ class CaptureActivity : Activity() {
             isFirstPhoto = false
             Log.wtf("sendingPic", "This pic boutta get dabbed on")
             Ion.with(applicationContext)
-                    .load("http://09da9bbe.ngrok.io/uploadImage")
+                    .load("https://pennapps.nicholascarr.ca")
                     .setMultipartFile("image", bitmapToFile(bitmap))
                     .asJsonObject()
                     .setCallback { _, json ->
