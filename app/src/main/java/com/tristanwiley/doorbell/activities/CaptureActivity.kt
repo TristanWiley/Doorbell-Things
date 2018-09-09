@@ -100,10 +100,14 @@ class CaptureActivity : Activity() {
                         //The JSON here is of format {"confidence":#, "faceID":String, "faceName": string}
                         handler.removeCallbacksAndMessages(null)
                         closeCamera()
-                        runOnUiThread {
-                            var intent = Intent(this@CaptureActivity, ResultActivity::class.java)
-                            intent.putExtra("faceName", json.get("faceName").asString)
-                            startActivity(intent)
+                        try {
+                            runOnUiThread {
+                                var intent = Intent(this@CaptureActivity, ResultActivity::class.java)
+                                intent.putExtra("faceName", json.get("faceName").asString)
+                                startActivity(intent)
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
                     }
 
