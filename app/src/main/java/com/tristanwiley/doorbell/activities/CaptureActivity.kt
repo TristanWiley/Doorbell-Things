@@ -75,7 +75,7 @@ class CaptureActivity : Activity() {
         Log.wtf("sendingPic", "This pic boutta get dabbed on")
         textView.text = "Sending your picture..."
         Ion.with(applicationContext)
-                .load("https://pennapps.nicholascarr.ca/uploadImage")
+                .load("http://09da9bbe.ngrok.io/uploadImage")
                 .setMultipartFile("image", bitmapToFile(bitmap))
                 .asJsonObject()
                 .setCallback { _, json ->
@@ -92,6 +92,9 @@ class CaptureActivity : Activity() {
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
+                        var intent = Intent(this@CaptureActivity, ResultActivity::class.java)
+                        intent.putExtra("faceName", "unknown")
+                        startActivity(intent)
                     }
                 }
 
