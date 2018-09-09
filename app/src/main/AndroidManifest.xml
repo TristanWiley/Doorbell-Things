@@ -23,6 +23,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.CaptureActivity" />
+        <activity android:name=".activities.ResultActivity"></activity>
     </application>
 
 </manifest>

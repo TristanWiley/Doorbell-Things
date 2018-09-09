@@ -82,9 +82,7 @@ class CaptureActivity : Activity() {
                 pwm.setPwmFrequencyHz(note.NOTE_FREQUENCY)
                 Thread.sleep(note.NOTE_DELAY)
             }
-            handler.removeCallbacksAndMessages(null)
-            closeCamera()
-            runOnUiThread { startActivity(Intent(this@CaptureActivity, MainActivity::class.java)) }
+
             pwm.setEnabled(false)
         }
     }
@@ -92,13 +90,23 @@ class CaptureActivity : Activity() {
     private fun onPhotoReady(bitmap: Bitmap) {
         if (isFirstPhoto) {
             isFirstPhoto = false
+            Log.wtf("sendingPic", "This pic boutta get dabbed on")
             Ion.with(applicationContext)
-                    .load("http://b34457ed.ngrok.io/uploadImage")
+                    .load("http://3bd8e6c5.ngrok.io/uploadImage")
                     .setMultipartFile("image", bitmapToFile(bitmap))
                     .asJsonObject()
-                    .setCallback({ _, json ->
+                    .setCallback { _, json ->
                         Log.wtf("onPhotoReady", "SENT: $json")
-                    })
+                        //The JSON here is of format {"confidence":#, "faceID":String, "faceName": string}
+                        handler.removeCallbacksAndMessages(null)
+                        closeCamera()
+                        runOnUiThread {
+                            var intent = Intent(this@CaptureActivity, ResultActivity::class.java)
+                            intent.putExtra("faceName", json.get("faceName").asString)
+                            startActivity(intent)
+                        }
+                    }
+
         }
         imageView.setImageBitmap(bitmap)
     }
